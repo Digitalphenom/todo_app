@@ -1,1 +1,1 @@
-A basic Todo app from Launch School RB175
+A basic Todo app tutorial using Sinatra from Launch School's RB175 course
