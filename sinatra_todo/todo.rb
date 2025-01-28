@@ -48,3 +48,9 @@ post '/lists' do
     redirect '/lists'
   end
 end
+
+get '/lists/:id' do
+  id = params[:id].to_i
+  @lists = session[:lists][id]
+  erb :add_to_list
+end
