@@ -61,7 +61,7 @@ end
 # Submit updated list
 post '/lists/:id' do
   list_name = params[:list_name].strip
-  id = params[:id]
+  id = params[:id].to_i
   @lists = session[:lists][id]
   
   error = validate(list_name)
