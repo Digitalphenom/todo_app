@@ -19,6 +19,8 @@ end
 # View list of all lists
 get '/lists' do
   @lists = session[:lists]
+  @lists.each.with_index do |list, idx|
+  end
   erb :lists
 end
 
@@ -39,7 +41,6 @@ end
 post '/lists' do
   list_name = params[:list_name].strip
   error = validate(list_name)
-
   if error
     session[:error] = error
     erb :new_list, layout: :layout
@@ -82,3 +83,18 @@ get '/lists/:id' do
   erb :list
 end
 
+# Delete todo item
+post '/lists/:id/delete' do
+  id = params[:id].to_i
+  session[:lists].delete_at id
+  session[:success] = 'The list has been deleted'
+  redirect "/lists"
+end
+
+# Add todo item
+post '/lists/:id/todos' do
+  id = params[:id].to_i
+  session[:lists][id][:todos] << params[:todo] 
+  session[:success] = 'You added a todo'
+  redirect "/lists"
+end
