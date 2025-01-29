@@ -50,9 +50,35 @@ post '/lists' do
   end
 end
 
-# Visit curent todo
-get '/lists/:id' do
+# Edit existing todo
+
+get '/lists/:id/edit' do
   id = params[:id].to_i
   @lists = session[:lists][id]
+  erb :edit_list
+end
+
+# Submit updated list
+post '/lists/:id' do
+  list_name = params[:list_name].strip
+  id = params[:id]
+  @lists = session[:lists][id]
+  
+  error = validate(list_name)
+  if error  
+    session[:error] = error
+    erb :edit_list, layout: :layout
+  else
+    @lists[:name] = list_name
+    session[:success] = 'The list has been updated!'
+    redirect "/lists/#{id}"
+  end
+end
+
+# Visit curent todo
+get '/lists/:id' do
+  @id = params[:id].to_i
+  @lists = session[:lists][@id]
   erb :list
 end
+

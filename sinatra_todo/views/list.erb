@@ -1,28 +1,14 @@
 <section>
   <header>
     <ul id="lists">
-      <li>
+      <li class="edit">
         <h2> <%= @lists[:name] %> <h2>
+        <p><a href="/lists/<%= params[:id] %>/edit">Edit</a></p>
       </li>
     </ul>
   </header>
 </section>
 
 <% content_for :header_links do %>
-  <a href="/lists">Go Back</a>
+  <a href="/lists">All Lists</a>
 <% end %>
-
-<!-- <form action="/lists"  method="post">
-  <dl>
-    <dt>
-      <label for="list_name">Enter a new todo item:</label>
-    </dt>
-    <dd>
-      <input name="list_name" placeholder="Todo Text" type="text" value="">
-    </dd>
-  </dl>
-  <fieldset class="actions">
-    <input type="submit" value="Add">
-  </fieldset>
-</form>
--->
