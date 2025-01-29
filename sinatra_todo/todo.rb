@@ -1,7 +1,7 @@
 require 'sinatra'
 require 'sinatra/reloader'
-# require "tilt/erubis"
 require 'sinatra/content_for'
+# require "tilt/erubis"
 
 configure do
   enable :sessions
@@ -16,7 +16,7 @@ get '/' do
   redirect '/lists'
 end
 
-# View list of lists
+# View list of all lists
 get '/lists' do
   @lists = session[:lists]
   erb :lists
@@ -50,8 +50,9 @@ post '/lists' do
   end
 end
 
+# Visit curent todo
 get '/lists/:id' do
   id = params[:id].to_i
   @lists = session[:lists][id]
-  erb :add_to_list
+  erb :list
 end
