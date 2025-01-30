@@ -95,8 +95,21 @@ post '/lists/:list_id/todos' do
   end
 end
 
+# Mark todo complete
+post '/lists/:list_id/todos/:todo_id' do
+  @list_id = params[:list_id].to_i
+  todo_id = params[:todo_id].to_i
+  value = !params[:completed].empty?
+
+  curent_list = session[:lists][@list_id]
+  curent_list[:todos][todo_id][:completed] = value
+
+  session[:success] = 'The todo item has been completed'
+  redirect "/lists/#{@list_id}"
+end
+
 # Delete todo list
-post '/lists/:list_id/delete list' do
+post '/lists/:list_id/delete' do
   @list_id = params[:list_id].to_i
   session[:lists].delete_at @list_id
   session[:success] = 'The list has been deleted'
@@ -104,7 +117,7 @@ post '/lists/:list_id/delete list' do
 end
 
 # Delete todo item
-post '/lists/:list_id/delete item' do
+post '/lists/:list_id/todos/:todo_id/delete' do
   @list_id = params[:list_id].to_i
   todo_id = params[:todo_id].to_i
   session[:lists][@list_id][:todos].delete_at todo_id
@@ -114,7 +127,6 @@ end
 
 # Submit updated list
 post '/lists/:id' do
-
   list_name = params[:todo].strip
   @list_id = params[:id].to_i
   @lists = session[:lists][@list_id]
