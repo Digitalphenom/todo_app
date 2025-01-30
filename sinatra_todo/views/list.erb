@@ -9,10 +9,13 @@
   </header>
   <ul>
       <% @lists[:todos].each.with_index do |todo, idx| %>
-        <li>
+      <% if todo[:completed] %>
+      <% else %>
+        <li> 
+      <% end %>
 <!---‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧-->
           <form action="/lists/<%= @list_id %>/todos/<%= idx %>" method="post" class="check">
-            <input type="hidden" name="completed" value="true" />
+            <input type="hidden" name="completed" value="<%= !todo[:completed] %>" />
             <button type="submit">Complete</button>
           </form>
 <!---‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧-->

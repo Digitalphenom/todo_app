@@ -98,11 +98,11 @@ end
 # Mark todo complete
 post '/lists/:list_id/todos/:todo_id' do
   @list_id = params[:list_id].to_i
-  todo_id = params[:todo_id].to_i
-  value = !params[:completed].empty?
-
   curent_list = session[:lists][@list_id]
-  curent_list[:todos][todo_id][:completed] = value
+  
+  todo_id = params[:todo_id].to_i
+  is_completed = params[:completed] == "true"
+  curent_list[:todos][todo_id][:completed] = is_completed
 
   session[:success] = 'The todo item has been completed'
   redirect "/lists/#{@list_id}"
