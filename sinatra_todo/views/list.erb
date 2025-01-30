@@ -1,23 +1,34 @@
 <section>
   <header>
-    <ul id="lists">
-      <li class="edit">
+    <ul >
+      <li id="lists" >
         <h2> <%= @lists[:name] %> <h2>
-        <p><a href="/lists/<%= params[:id] %>/edit">Edit</a></p>
+        <p><a class="edit" href="/lists/<%= @list_id %>/edit">Edit</a></p>
       </li>
     </ul>
   </header>
+  <ul>
+      <% @lists[:todos].each.with_index do |todo, idx| %>
+        <li>
+          <p><%= todo[:name] %></p>
+          <form action="/lists/<%= @list_id %>/delete%20item" method="post" class="delete">
+          <input type="hidden" name="todo_item" value="<%= idx %>"> </input>
+            <button type="submit">Delete</button>
+          </form>
+      </li>
+    <% end %>
+  </ul>
 </section>
 
 <!-- ◟◅◸◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◞ -->
 
-<form action="/lists/<%= params[:id] %>/todos" method="post">
+<form action="/lists/<%= @list_id %>/todos" method="post">
   <dl>
     <dt>
       <label for="todo">Enter a new todo item:</label>
     </dt>
     <dd>
-      <input name="todo" id="todo" placeholder="Add todo" type="text" value="">
+      <input name="todo" id="todo" placeholder="Add todo" type="text" value="<%= params[:todo] %>">
     </dd>
   </dl>
   <fieldset class="actions">
@@ -28,5 +39,5 @@
 <!-- ◟◅◸◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◞ -->
 
 <% content_for :header_links do %>
-  <a href="/lists">All Lists</a>
+  <a class="list" href="/lists">All Lists</a>
 <% end %>
