@@ -1,12 +1,11 @@
-<section>
+<section id="todos">
   <header>
-    <ul >
-      <li id="lists" >
-        <h2> <%= @lists %> <h2>
-        <p><a class="edit" href="/lists/<%= @list_id %>/edit">Edit</a></p>
-      </li>
+    <h2> <%= @lists[:name] %></h2>
+    <ul>
+      <li><a class="edit" href="/lists/<%= @list_id %>/edit">Edit</a></li>
     </ul>
   </header>
+<!---‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧-->
   <ul>
       <% @lists[:todos].each.with_index do |todo, idx| %>
       <% if todo[:completed] %>
