@@ -127,10 +127,10 @@ end
 
 # Submit updated list
 post '/lists/:id' do
-  list_name = params[:todo].strip
-  @list_id = params[:id].to_i
-  @lists = session[:lists][@list_id]
-
+  list_name = params[:list_name].strip
+  id = params[:id].to_i
+  @lists = session[:lists][id]
+  
   error = validate(list_name)
   if error  
     session[:error] = error
@@ -138,6 +138,7 @@ post '/lists/:id' do
   else
     @lists[:name] = list_name
     session[:success] = 'The list has been updated!'
-    redirect "/lists/#{@list_id}"
+    redirect "/lists/#{id}"
   end
 end
+
