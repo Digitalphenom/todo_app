@@ -12,6 +12,17 @@ before do
   session[:lists] ||= []
 end
 
+helpers do
+  def display_count(list)
+    total = list[:todos].count
+    done = list[:todos].inject(0) do |acc, todo|
+      todo[:completed] ? acc += 1 : acc
+    end
+
+    "#{total} / #{done}"
+  end
+end
+
 #‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
 
 def validate(list)
@@ -37,8 +48,7 @@ end
 # View list of all lists
 get '/lists' do
   @lists = session[:lists]
-  @lists.each.with_index do |list, idx|
-  end
+
   erb :lists
 end
 
