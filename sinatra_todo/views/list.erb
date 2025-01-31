@@ -11,13 +11,14 @@
     </ul>
   </header>
   <ul>
-      <% @lists[:todos].each.with_index do |todo, idx| %>
+      <% sort_todos(@lists) do |todo, idx| %>
       <% if todo[:completed] %>
+        <li class="complete">
       <% else %>
         <li> 
       <% end %>
 
-          <form action="/lists/<%= @list_id %>/todos/<%= idx %>" method="post" class="check">
+          <form action="/lists/<%= @list_id %>/todos<%= idx %>" method="post" class="check">
             <input type="hidden" name="completed" value="<%= !todo[:completed] %>" />
             <button type="submit">Un-Mark</button>
           </form>

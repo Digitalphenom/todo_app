@@ -12,6 +12,8 @@ before do
   session[:lists] ||= []
 end
 
+#‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
+
 helpers do
   def display_count(list)
     total = list[:todos].count
@@ -31,6 +33,23 @@ helpers do
     "complete" if list_complete?(list)
   end
 
+  def sort_lists(lists, &block)
+    complete_lists, incomplete_lists = 
+    lists.partition { |list| list_complete?(list) }
+
+    incomplete_lists.each { |list| yield list, lists.index(list) } 
+    complete_lists.each { |list| yield list, lists.index(list) } 
+  end
+
+  def sort_todos(todos, &block)
+    complete_todos, incomplete_todos = 
+    todos[:todos].partition do |todo|
+      todo[:completed]
+    end
+
+    incomplete_todos.each { |todo| yield todo, todos.index(todo) } 
+    complete_todos.each { |todo| yield todo, todos.index(todo) } 
+  end
 end
 
 #‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
@@ -58,7 +77,6 @@ end
 # View list of all lists
 get '/lists' do
   @lists = session[:lists]
-
   erb :lists
 end
 
@@ -102,7 +120,8 @@ end
 post '/lists/:list_id/todos' do
   @list_id = params[:list_id].to_i
   @lists = session[:lists][@list_id]
-  text = params[:todo].strip
+  require 'pry'; binding.pry
+  text = params[:todos].strip
 
   error = error_for_todo(text)
   if error
