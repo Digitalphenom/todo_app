@@ -1,20 +1,15 @@
-<section id="todos">
+<section id="todos" class="<%= list_class(@lists)%>">
   <header>
     <h2> <%= @lists[:name] %></h2>
     <ul>
       <li>
-<!---‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧-->
-
         <form action="/lists/<%= @list_id.to_s %>/todos/complete" method="post">
           <button class="check" type="submit">Complete All</button>
         </form>
-
-<!---‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧-->
       </li>
       <li><a class="edit" href="/lists/<%= @list_id %>/edit">Edit</a></li>
     </ul>
   </header>
-
   <ul>
       <% @lists[:todos].each.with_index do |todo, idx| %>
       <% if todo[:completed] %>

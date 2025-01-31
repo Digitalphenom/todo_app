@@ -22,11 +22,15 @@ helpers do
     [total, done]
   end
 
-  def check_if_complete(list)
-    total, done = display_count(list)
-    return '' if total.zero? && done.zero?
-    total == done ? 'complete' : ''
+  def list_complete?(list)
+    return false if list[:todos].empty?
+    list[:todos].all? { |todo| todo[:completed] } 
   end
+
+  def list_class(list)
+    "complete" if list_complete?(list)
+  end
+
 end
 
 #‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
