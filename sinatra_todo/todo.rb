@@ -95,6 +95,17 @@ post '/lists/:list_id/todos' do
   end
 end
 
+# Mark all todos complete
+post '/lists/:list_id/todos/complete' do
+  @list_id = params[:list_id].to_i
+  current_list = session[:lists][@list_id]
+
+  current_list[:todos].each { |todo| todo[:completed] = true }
+
+  session[:success] = 'All todos are complete'
+  redirect "/lists/#{@list_id}"
+end
+
 # Mark todo complete
 post '/lists/:list_id/todos/:todo_id' do
   @list_id = params[:list_id].to_i

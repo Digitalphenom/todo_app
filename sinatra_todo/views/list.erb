@@ -2,22 +2,31 @@
   <header>
     <h2> <%= @lists[:name] %></h2>
     <ul>
+      <li>
+<!---‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧-->
+
+        <form action="/lists/<%= @list_id.to_s %>/todos/complete" method="post">
+          <button class="check" type="submit">Complete All</button>
+        </form>
+
+<!---‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧-->
+      </li>
       <li><a class="edit" href="/lists/<%= @list_id %>/edit">Edit</a></li>
     </ul>
   </header>
-<!---‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧-->
+
   <ul>
       <% @lists[:todos].each.with_index do |todo, idx| %>
       <% if todo[:completed] %>
       <% else %>
         <li> 
       <% end %>
-<!---‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧-->
+
           <form action="/lists/<%= @list_id %>/todos/<%= idx %>" method="post" class="check">
             <input type="hidden" name="completed" value="<%= !todo[:completed] %>" />
             <button type="submit">Complete</button>
           </form>
-<!---‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧-->
+
           <p><%= todo[:name] %></p>
           <form action="/lists/<%= @list_id %>/todos/<%= idx %>/delete" method="post" class="delete">
             <button type="submit">Delete</button>
