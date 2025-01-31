@@ -19,7 +19,13 @@ helpers do
       todo[:completed] ? acc += 1 : acc
     end
 
-    "#{total} / #{done}"
+    [total, done]
+  end
+
+  def check_if_complete(list)
+    total, done = display_count(list)
+    return '' if total.zero? && done.zero?
+    total == done ? 'complete' : ''
   end
 end
 

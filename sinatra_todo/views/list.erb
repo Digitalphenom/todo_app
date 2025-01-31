@@ -24,7 +24,7 @@
 
           <form action="/lists/<%= @list_id %>/todos/<%= idx %>" method="post" class="check">
             <input type="hidden" name="completed" value="<%= !todo[:completed] %>" />
-            <button type="submit">Complete</button>
+            <button type="submit">Un-Mark</button>
           </form>
 
           <p><%= todo[:name] %></p>
