@@ -12,8 +12,6 @@ before do
   session[:lists] ||= []
 end
 
-#‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
-
 helpers do
   def display_count(list)
     total = list[:todos].count
@@ -24,32 +22,27 @@ helpers do
     [total, done]
   end
 
-  def list_complete?(list)
-    return false if list[:todos].empty?
-    list[:todos].all? { |todo| todo[:completed] } 
-  end
-
-  def list_class(list)
-    "complete" if list_complete?(list)
+  def list_complete(list)
+    total, done = display_count(list)
+    return '' if total.zero? && done.zero?
+    total == done ? 'complete' : ''
   end
 
   def sort_lists(lists, &block)
     complete_lists, incomplete_lists = 
     lists.partition { |list| list_complete?(list) }
-
-    incomplete_lists.each { |list| yield list, lists.index(list) } 
-    complete_lists.each { |list| yield list, lists.index(list) } 
+    incomplete_lists.each { |list| yield list, lists.index(list) }
+    complete_lists.each { |list| yield list, lists.index(list) }
   end
-
+  
   def sort_todos(todos, &block)
     complete_todos, incomplete_todos = 
-    todos[:todos].partition do |todo|
-      todo[:completed]
-    end
-
-    incomplete_todos.each { |todo| yield todo, todos.index(todo) } 
-    complete_todos.each { |todo| yield todo, todos.index(todo) } 
+    todos.partition { |todo| todo[:completed] }
+    
+    incomplete_todos.each { |todo| yield todo, todos.index(todo) }
+    complete_todos.each { |todo| yield todo, todos.index(todo) }
   end
+  
 end
 
 #‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
@@ -77,6 +70,7 @@ end
 # View list of all lists
 get '/lists' do
   @lists = session[:lists]
+
   erb :lists
 end
 
@@ -120,8 +114,7 @@ end
 post '/lists/:list_id/todos' do
   @list_id = params[:list_id].to_i
   @lists = session[:lists][@list_id]
-  require 'pry'; binding.pry
-  text = params[:todos].strip
+  text = params[:todo].strip
 
   error = error_for_todo(text)
   if error

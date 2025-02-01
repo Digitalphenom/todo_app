@@ -1,24 +1,29 @@
-<section id="todos" class="<%= list_class(@lists)%>">
+<section id="todos">
   <header>
     <h2> <%= @lists[:name] %></h2>
     <ul>
       <li>
+<!---‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧-->
+
         <form action="/lists/<%= @list_id.to_s %>/todos/complete" method="post">
           <button class="check" type="submit">Complete All</button>
         </form>
+
+<!---‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧-->
       </li>
       <li><a class="edit" href="/lists/<%= @list_id %>/edit">Edit</a></li>
     </ul>
   </header>
+
   <ul>
-      <% sort_todos(@lists) do |todo, idx| %>
+      <% sort_todos(@lists[:todos]) do |todo, idx| %>
       <% if todo[:completed] %>
         <li class="complete">
       <% else %>
         <li> 
       <% end %>
 
-          <form action="/lists/<%= @list_id %>/todos<%= idx %>" method="post" class="check">
+          <form action="/lists/<%= @list_id %>/todos/<%= idx %>" method="post" class="check">
             <input type="hidden" name="completed" value="<%= !todo[:completed] %>" />
             <button type="submit">Un-Mark</button>
           </form>
