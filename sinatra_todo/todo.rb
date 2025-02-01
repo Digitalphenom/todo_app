@@ -31,7 +31,7 @@ helpers do
 
   def sort_lists(lists)
     complete_lists, incomplete_lists =
-      lists.partition { |list| list_complete?(list) }
+      lists.partition { |list| list_complete(list) == 'complete' }
     incomplete_lists.each { |list| yield list, lists.index(list) }
     complete_lists.each { |list| yield list, lists.index(list) }
   end
