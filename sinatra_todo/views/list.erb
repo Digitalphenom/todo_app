@@ -3,17 +3,15 @@
     <h2> <%= @lists[:name] %></h2>
     <ul>
       <li>
-<!---‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧-->
-
         <form action="/lists/<%= @list_id.to_s %>/todos/complete" method="post">
           <button class="check" type="submit">Complete All</button>
         </form>
-
-<!---‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧-->
       </li>
       <li><a class="edit" href="/lists/<%= @list_id %>/edit">Edit</a></li>
     </ul>
   </header>
+
+<!-- ◟◅◸◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◞ -->
 
   <ul>
       <% sort_todos(@lists[:todos]) do |todo, idx| %>

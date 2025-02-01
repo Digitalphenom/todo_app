@@ -16,7 +16,7 @@ helpers do
   def display_count(list)
     total = list[:todos].count
     done = list[:todos].inject(0) do |acc, todo|
-      todo[:completed] ? acc += 1 : acc
+      todo[:completed] ? acc + 1 : acc
     end
 
     [total, done]
@@ -25,27 +25,27 @@ helpers do
   def list_complete(list)
     total, done = display_count(list)
     return '' if total.zero? && done.zero?
+
     total == done ? 'complete' : ''
   end
 
-  def sort_lists(lists, &block)
-    complete_lists, incomplete_lists = 
-    lists.partition { |list| list_complete?(list) }
+  def sort_lists(lists)
+    complete_lists, incomplete_lists =
+      lists.partition { |list| list_complete?(list) }
     incomplete_lists.each { |list| yield list, lists.index(list) }
     complete_lists.each { |list| yield list, lists.index(list) }
   end
-  
-  def sort_todos(todos, &block)
-    complete_todos, incomplete_todos = 
-    todos.partition { |todo| todo[:completed] }
-    
+
+  def sort_todos(todos)
+    complete_todos, incomplete_todos =
+      todos.partition { |todo| todo[:completed] }
+
     incomplete_todos.each { |todo| yield todo, todos.index(todo) }
     complete_todos.each { |todo| yield todo, todos.index(todo) }
   end
-  
 end
 
-#‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
+# ‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
 
 def validate(list)
   if !(1..100).cover? list.size
@@ -56,12 +56,12 @@ def validate(list)
 end
 
 def error_for_todo(name)
-  if !(1..100).cover? name.size
-    'Todo must be between 1 and 100 characters'
-  end
+  return if (1..100).cover? name.size
+
+  'Todo must be between 1 and 100 characters'
 end
 
-#‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
+# ‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
 
 get '/' do
   redirect '/lists'
@@ -93,7 +93,7 @@ get '/lists/:id' do
   erb :list
 end
 
-#‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
+# ‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
 
 # Create new list
 post '/lists' do
@@ -121,7 +121,7 @@ post '/lists/:list_id/todos' do
     session[:error] = error
     erb :list
   else
-    @lists[:todos] << {name: text, completed: false}
+    @lists[:todos] << { name: text, completed: false }
     session[:success] = 'You added a todo'
     redirect "/lists/#{@list_id}"
   end
@@ -142,9 +142,9 @@ end
 post '/lists/:list_id/todos/:todo_id' do
   @list_id = params[:list_id].to_i
   curent_list = session[:lists][@list_id]
-  
+
   todo_id = params[:todo_id].to_i
-  is_completed = params[:completed] == "true"
+  is_completed = params[:completed] == 'true'
   curent_list[:todos][todo_id][:completed] = is_completed
 
   session[:success] = 'The todo item has been completed'
@@ -156,7 +156,7 @@ post '/lists/:list_id/delete' do
   @list_id = params[:list_id].to_i
   session[:lists].delete_at @list_id
   session[:success] = 'The list has been deleted'
-  redirect "/lists"
+  redirect '/lists'
 end
 
 # Delete todo item
@@ -173,9 +173,9 @@ post '/lists/:id' do
   list_name = params[:list_name].strip
   id = params[:id].to_i
   @lists = session[:lists][id]
-  
+
   error = validate(list_name)
-  if error  
+  if error
     session[:error] = error
     erb :edit_list, layout: :layout
   else
@@ -184,4 +184,3 @@ post '/lists/:id' do
     redirect "/lists/#{id}"
   end
 end
-
