@@ -1,11 +1,13 @@
 require 'sinatra'
 require 'sinatra/reloader' if development?
 require 'sinatra/content_for'
-# require "tilt/erubis"
+require 'erubi'
+require 'erubi/capture_block'
 
 configure do
   enable :sessions
   set :session_secret, SecureRandom.hex(32)
+  set :erb, :escape_html => true
 end
 
 before do
@@ -70,7 +72,8 @@ end
 # View list of all lists
 get '/lists' do
   @lists = session[:lists]
-
+  #session.inspect
+  #@lists.inspect
   erb :lists
 end
 
