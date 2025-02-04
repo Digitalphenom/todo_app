@@ -63,6 +63,18 @@ def error_for_todo(name)
   'Todo must be between 1 and 100 characters'
 end
 
+#◟◅◸◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◞
+
+def check_if_empty(list)
+  if list.nil?
+    session[:error] = 'The list was not found'
+    redirect('/lists')
+  else
+    list
+  end
+end
+
+#◟◅◸◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◞
 # ‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
 
 get '/' do
@@ -72,8 +84,6 @@ end
 # View list of all lists
 get '/lists' do
   @lists = session[:lists]
-  #session.inspect
-  #@lists.inspect
   erb :lists
 end
 
@@ -86,6 +96,8 @@ end
 get '/lists/:id/edit' do
   @list_id = params[:id].to_i
   @lists = session[:lists][@list_id]
+  @lists = check_if_empty(@lists)
+
   erb :edit_list
 end
 
@@ -93,6 +105,8 @@ end
 get '/lists/:id' do
   @list_id = params[:id].to_i
   @lists = session[:lists][@list_id]
+
+  @lists = check_if_empty(@lists)
   erb :list
 end
 
@@ -133,9 +147,10 @@ end
 # Mark all todos complete
 post '/lists/:list_id/todos/complete' do
   @list_id = params[:list_id].to_i
-  current_list = session[:lists][@list_id]
+  @list = session[:lists][@list_id]
+  @list = check_if_empty(@list)
 
-  current_list[:todos].each { |todo| todo[:completed] = true }
+  @list[:todos].each { |todo| todo[:completed] = true }
 
   session[:success] = 'All todos are complete'
   redirect "/lists/#{@list_id}"
@@ -144,11 +159,12 @@ end
 # Mark todo complete
 post '/lists/:list_id/todos/:todo_id' do
   @list_id = params[:list_id].to_i
-  curent_list = session[:lists][@list_id]
+  @list = session[:lists][@list_id]
+  @list = check_if_empty(@list)
 
   todo_id = params[:todo_id].to_i
   is_completed = params[:completed] == 'true'
-  curent_list[:todos][todo_id][:completed] = is_completed
+  @list[:todos][todo_id][:completed] = is_completed
 
   session[:success] = 'The todo item has been completed'
   redirect "/lists/#{@list_id}"
@@ -158,17 +174,28 @@ end
 post '/lists/:list_id/delete' do
   @list_id = params[:list_id].to_i
   session[:lists].delete_at @list_id
-  session[:success] = 'The list has been deleted'
-  redirect '/lists'
+
+  if env["HTTP_X_REQUESTED_WITH"] == "XMLHttpRequest"
+    '/lists'
+  else
+    session[:success] = 'The list has been deleted'
+    redirect '/lists'
+  end
 end
 
 # Delete todo item
 post '/lists/:list_id/todos/:todo_id/delete' do
   @list_id = params[:list_id].to_i
   todo_id = params[:todo_id].to_i
+
   session[:lists][@list_id][:todos].delete_at todo_id
-  session[:success] = 'The todo item has been deleted'
-  redirect "/lists/#{@list_id}"
+
+  if env["HTTP_X_REQUESTED_WITH"] == "XMLHttpRequest"
+    status 204
+  else
+    session[:success] = 'The todo item has been deleted'
+    redirect "/lists/#{@list_id}"
+  end
 end
 
 # Submit updated list
@@ -176,6 +203,7 @@ post '/lists/:id' do
   list_name = params[:list_name].strip
   id = params[:id].to_i
   @lists = session[:lists][id]
+  @lists = check_if_empty(@lists)
 
   error = validate(list_name)
   if error
