@@ -127,18 +127,26 @@ post '/lists' do
   end
 end
 
+def next_todo_id(list)
+  return 1 if list[:todos].empty?
+  list[:todos].size + 1
+end
+
 # Add todo item
 post '/lists/:list_id/todos' do
   @list_id = params[:list_id].to_i
   @lists = session[:lists][@list_id]
   text = params[:todo].strip
 
+  
+
   error = error_for_todo(text)
   if error
     session[:error] = error
     erb :list
   else
-    @lists[:todos] << { name: text, completed: false }
+    id = next_todo_id(@lists)
+    @lists[:todos] << { id: id, name: text, completed: false }
     session[:success] = 'You added a todo'
     redirect "/lists/#{@list_id}"
   end
@@ -161,11 +169,13 @@ post '/lists/:list_id/todos/:todo_id' do
   @list_id = params[:list_id].to_i
   @list = session[:lists][@list_id]
   @list = check_if_empty(@list)
-
+  
   todo_id = params[:todo_id].to_i
+  todo_arr = @list[:todos]
   is_completed = params[:completed] == 'true'
-  @list[:todos][todo_id][:completed] = is_completed
 
+  selected = todo_arr.select { |todo| todo[:id] == todo_id }.first
+  selected[:completed] = is_completed
   session[:success] = 'The todo item has been completed'
   redirect "/lists/#{@list_id}"
 end
@@ -187,9 +197,9 @@ end
 post '/lists/:list_id/todos/:todo_id/delete' do
   @list_id = params[:list_id].to_i
   todo_id = params[:todo_id].to_i
+  todo_arr = session[:lists][@list_id][:todos]
 
-  session[:lists][@list_id][:todos].delete_at todo_id
-
+  todo_arr.reject! { |todo| todo[:id] == todo_id }
   if env["HTTP_X_REQUESTED_WITH"] == "XMLHttpRequest"
     status 204
   else
