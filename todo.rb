@@ -11,7 +11,7 @@ configure do
 end
 
 before do
-  session[:lists] ||= []
+  @storage = SessionPersistence.new(session)
 end
 
 helpers do
@@ -47,12 +47,45 @@ helpers do
   end
 end
 
+#‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
+
+class SessionPersistence
+  def initialize(session)
+    @session = session
+    @session[:lists] ||= []
+  end
+
+  def all_lists
+    @session[:lists]
+  end
+
+  def lists_empty?
+    @session[:lists].empty?
+  end
+
+  def update_lists=(value)
+    @session[:lists] = value
+  end
+
+  def delete_list(list_id)
+    all_lists.reject! { |list| list[:id] == list_id }
+  end
+
+  def list_size
+    @session[:lists].size
+  end
+
+  def find_matching(list_id)
+    all_lists.find { |list| list[:id] == list_id }
+  end
+end
+
 # ‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
 
 def validate(list)
   if !(1..100).cover? list.size
     'List name must be between 1 and 100 characters'
-  elsif session[:lists].any? { |hsh| hsh[:name] == list }
+  elsif @storage.all_lists.any? { |hsh| hsh[:name] == list }
     'List name must be unique.'
   end
 end
@@ -67,7 +100,7 @@ end
 
 def check_if_empty(list)
   if list.nil?
-    session[:error] = 'The list was not found'
+    @storage.update_lists = 'The list was not found'
     redirect('/lists')
   else
     list
@@ -80,8 +113,8 @@ def next_todo_id(list)
 end
 
 def next_list_id
-  return 0 if session[:lists].empty?
-  session[:lists].size
+  return 0 if @storage.lists_empty?
+  @storage.list_size
 end
 
 # ◟◅◸◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◞
@@ -92,7 +125,7 @@ end
 
 # View list of all lists
 get '/lists' do
-  @lists = session[:lists]
+  @lists = @storage.all_lists
   erb :lists
 end
 
@@ -104,8 +137,9 @@ end
 # Edit existing todo
 get '/lists/:id/edit' do
   @list_id = params[:id].to_i
-  @lists = session[:lists].find { |list| list[:id] == @list_id }
+  @lists = @storage.find_matching(@list_id)
   @lists = check_if_empty(@lists)
+
 
   erb :edit_list
 end
@@ -113,8 +147,8 @@ end
 # Visit curent todo
 get '/lists/:id' do
   @list_id = params[:id].to_i
-  @lists = session[:lists][@list_id]
-  @lists = session[:lists].find { |list| list[:id] == @list_id }
+  @lists = @storage.all_lists[@list_id]
+  @lists = @storage.find_matching(@list_id)
 
   @lists = check_if_empty(@lists)
   erb :list
@@ -132,7 +166,7 @@ post '/lists' do
     erb :new_list, layout: :layout
   else
     id = next_list_id
-    session[:lists] << { id: id, name: list_name, todos: [] }
+    @storage.all_lists << { id: id, name: list_name, todos: [] }
     session[:success] = 'The list has been created!'
     redirect '/lists'
   end
@@ -141,7 +175,7 @@ end
 # Add todo item
 post '/lists/:list_id/todos' do
   @list_id = params[:list_id].to_i
-  @lists = session[:lists][@list_id]
+  @lists = @storage.all_lists[@list_id]
   text = params[:todo].strip
 
   error = error_for_todo(text)
@@ -159,11 +193,11 @@ end
 # Mark all todos complete
 post '/lists/:list_id/todos/complete' do
   @list_id = params[:list_id].to_i
-  @list = session[:lists][@list_id]
+  @list = @storage.all_lists[@list_id]
   @list = check_if_empty(@list)
-
+  
   @list[:todos].each { |todo| todo[:completed] = true }
-
+  
   session[:success] = 'All todos are complete'
   redirect "/lists/#{@list_id}"
 end
@@ -171,9 +205,9 @@ end
 # Mark todo complete
 post '/lists/:list_id/todos/:todo_id' do
   @list_id = params[:list_id].to_i
-  @list = session[:lists][@list_id]
+  @list = @storage.all_lists[@list_id]
   @list = check_if_empty(@list)
-  
+
   todo_id = params[:todo_id].to_i
   todo_arr = @list[:todos]
   is_completed = params[:completed] == 'true'
@@ -187,7 +221,7 @@ end
 # Delete todo list
 post '/lists/:list_id/delete' do
   @list_id = params[:list_id].to_i
-  session[:lists].reject! { |list| list[:id] == @list_id }
+  @storage.delete_list
 
   if env["HTTP_X_REQUESTED_WITH"] == "XMLHttpRequest"
     '/lists'
@@ -201,7 +235,7 @@ end
 post '/lists/:list_id/todos/:todo_id/delete' do
   @list_id = params[:list_id].to_i
   todo_id = params[:todo_id].to_i
-  todo_arr = session[:lists][@list_id][:todos]
+  todo_arr = @storage.all_lists[@list_id][:todos]
 
   todo_arr.reject! { |todo| todo[:id] == todo_id }
   if env["HTTP_X_REQUESTED_WITH"] == "XMLHttpRequest"
@@ -216,7 +250,7 @@ end
 post '/lists/:id' do
   list_name = params[:list_name].strip
   id = params[:id].to_i
-  @lists = session[:lists][id]
+  @lists = @storage.all_lists[id]
   @lists = check_if_empty(@lists)
 
   error = validate(list_name)
