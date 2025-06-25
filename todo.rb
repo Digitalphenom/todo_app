@@ -252,14 +252,9 @@ end
 # Delete todo list
 post '/lists/:list_id/delete' do
   @list_id = params[:list_id].to_i
-  @storage.delete_list
-
-  if env['HTTP_X_REQUESTED_WITH'] == 'XMLHttpRequest'
-    '/lists'
-  else
-    session[:success] = 'The list has been deleted'
-    redirect '/lists'
-  end
+  @storage.delete_list(@list_id)
+  session[:success] = 'The list has been deleted'
+  '/lists'
 end
 
 # Delete todo item
