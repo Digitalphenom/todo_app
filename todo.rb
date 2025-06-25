@@ -105,6 +105,14 @@ class SessionPersistence
     list[:todos].each { |todo| todo[:completed] = true }
   end
 
+  def current_list(id)
+    all_lists[id]
+  end
+
+  def update_list_name(list_name, id)
+    current_list(id)[:name] = list_name
+  end
+
   private
 
   def next_todo_id(list)
@@ -138,17 +146,6 @@ end
 
 # ◟◅◸◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◞
 
-def check_if_empty(list)
-  if list.nil?
-    @storage.update_lists = 'The list was not found'
-    redirect('/lists')
-  else
-    list
-  end
-end
-
-# ◟◅◸◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◞
-
 get '/' do
   redirect '/lists'
 end
@@ -168,7 +165,6 @@ end
 get '/lists/:id/edit' do
   @list_id = params[:id].to_i
   @lists = load_list(@list_id)
-  @lists = check_if_empty(@lists)
 
   erb :edit_list
 end
@@ -179,7 +175,6 @@ get '/lists/:id' do
   @lists = load_list(@list_id)
   @lists = @storage.find_list(@list_id)
 
-  @lists = check_if_empty(@lists)
   erb :list
 end
 
@@ -206,8 +201,8 @@ post '/lists/:list_id/todos' do
   @list_id = params[:list_id].to_i
   @lists = load_list(@list_id)
   text = params[:todo].strip
-
   error = error_for_todo(text)
+
   if error
     session[:error] = error
     erb :list
@@ -223,8 +218,6 @@ end
 post '/lists/:list_id/todos/complete' do
   @list_id = params[:list_id].to_i
   @list = load_list(@list_id)
-  @list = check_if_empty(@list)
-
   @storage.mark_all_todos_complete(@list)
 
   session[:success] = 'All todos are complete'
@@ -235,7 +228,6 @@ end
 post '/lists/:list_id/todos/:todo_id' do
   @list_id = params[:list_id].to_i
   @list = load_list(@list_id)
-  @list = check_if_empty(@list)
   todo_id = params[:todo_id].to_i
 
   is_completed = params[:completed] == 'true'
@@ -271,15 +263,14 @@ end
 post '/lists/:id' do
   list_name = params[:list_name].strip
   id = params[:id].to_i
-  @lists = @storage.all_lists[id]
-  @lists = check_if_empty(@lists)
-
   error = validate(list_name)
+  
   if error
     session[:error] = error
+    @lists = @storage.current_list(id)
     erb :edit_list, layout: :layout
   else
-    @lists[:name] = list_name
+    @storage.update_list_name(list_name, id)
     session[:success] = 'The list has been updated!'
     redirect "/lists/#{id}"
   end
