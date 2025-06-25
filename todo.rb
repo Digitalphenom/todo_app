@@ -59,6 +59,10 @@ class SessionPersistence
     @session[:lists]
   end
 
+  def add_to_list(list)
+    all_lists << list
+  end
+
   def lists_empty?
     @session[:lists].empty?
   end
@@ -81,6 +85,10 @@ class SessionPersistence
 
   def find_todos(list_id)
     find_list(list_id)[:todos]
+  end
+
+  def add_todo(list, todo)
+    list[:todos] << todo
   end
 
   def remove_todo(list_id, todo_id)
@@ -110,6 +118,10 @@ def error_for_todo(name)
   return if (1..100).cover? name.size
 
   'Todo must be between 1 and 100 characters'
+end
+
+def load_list(list_id)
+  @storage.find_list(@list_id)
 end
 
 # ◟◅◸◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◞
@@ -155,7 +167,7 @@ end
 # Edit existing todo
 get '/lists/:id/edit' do
   @list_id = params[:id].to_i
-  @lists = @storage.find_list(@list_id)
+  @lists = load_list(@list_id)
   @lists = check_if_empty(@lists)
 
   erb :edit_list
@@ -164,7 +176,7 @@ end
 # Visit curent todo
 get '/lists/:id' do
   @list_id = params[:id].to_i
-  @lists = @storage.all_lists[@list_id]
+  @lists = load_list(@list_id)
   @lists = @storage.find_list(@list_id)
 
   @lists = check_if_empty(@lists)
@@ -183,7 +195,9 @@ post '/lists' do
     erb :new_list, layout: :layout
   else
     id = next_list_id
-    @storage.all_lists << { id: id, name: list_name, todos: [] }
+    list = { id: id, name: list_name, todos: [] }
+    @storage.add_to_list(list)
+    
     session[:success] = 'The list has been created!'
     redirect '/lists'
   end
@@ -192,7 +206,7 @@ end
 # Add todo item
 post '/lists/:list_id/todos' do
   @list_id = params[:list_id].to_i
-  @lists = @storage.find_list(@list_id)
+  @lists = load_list(@list_id)
   text = params[:todo].strip
 
   error = error_for_todo(text)
@@ -201,7 +215,9 @@ post '/lists/:list_id/todos' do
     erb :list
   else
     id = next_todo_id(@lists)
-    @lists[:todos] << { id: id, name: text, completed: false }
+    todo = { id: id, name: text, completed: false }
+    @storage.add_todo(@lists, todo)
+    
     session[:success] = 'You added a todo'
     redirect "/lists/#{@list_id}"
   end
@@ -210,7 +226,7 @@ end
 # Mark all todos complete
 post '/lists/:list_id/todos/complete' do
   @list_id = params[:list_id].to_i
-  @list = @storage.find_list(@list_id)
+  @list = load_list(@list_id)
   @list = check_if_empty(@list)
 
   @storage.mark_all_todos_complete(@list)
@@ -222,12 +238,11 @@ end
 # Mark todo complete
 post '/lists/:list_id/todos/:todo_id' do
   @list_id = params[:list_id].to_i
-  @list = @storage.find_list(@list_id)
+  @list = load_list(@list_id)
   @list = check_if_empty(@list)
   todo_id = params[:todo_id].to_i
 
   is_completed = params[:completed] == 'true'
-
   todo = @storage.select_first_todo(@list, todo_id)
   todo[:completed] = is_completed
   session[:success] = 'The todo item has been completed'
