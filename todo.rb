@@ -59,8 +59,9 @@ class SessionPersistence
     @session[:lists]
   end
 
-  def add_to_list(list)
-    all_lists << list
+  def add_to_list(list_name)
+    new_list = { id: next_list_id, name: list_name, todos: [] }
+    all_lists << new_list
   end
 
   def lists_empty?
@@ -109,6 +110,10 @@ class SessionPersistence
   def next_todo_id(list)
     list[:todos].empty? ? 1 : list[:todos].size + 1
   end
+
+  def next_list_id
+    lists_empty? ? 0 : list_size
+  end
 end
 
 # ‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
@@ -140,18 +145,6 @@ def check_if_empty(list)
   else
     list
   end
-end
-
-def next_todo_id(list)
-  return 1 if list[:todos].empty?
-
-  list[:todos].size + 1
-end
-
-def next_list_id
-  return 0 if @storage.lists_empty?
-
-  @storage.list_size
 end
 
 # ◟◅◸◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◞
@@ -201,9 +194,7 @@ post '/lists' do
     session[:error] = error
     erb :new_list, layout: :layout
   else
-    id = next_list_id
-    list = { id: id, name: list_name, todos: [] }
-    @storage.add_to_list(list)
+    @storage.add_to_list(list_name)
 
     session[:success] = 'The list has been created!'
     redirect '/lists'
@@ -288,7 +279,6 @@ post '/lists/:id' do
     session[:error] = error
     erb :edit_list, layout: :layout
   else
-    # session[:lists].reject! { |list| list[:id] == @list_id }
     @lists[:name] = list_name
     session[:success] = 'The list has been updated!'
     redirect "/lists/#{id}"
