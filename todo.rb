@@ -64,7 +64,7 @@ class SessionPersistence
   end
 
   def lists_empty?
-    @session[:lists].empty?
+    all_lists.empty?
   end
 
   def update_lists=(value)
@@ -76,7 +76,7 @@ class SessionPersistence
   end
 
   def list_size
-    @session[:lists].size
+    all_lists.size
   end
 
   def find_list(list_id)
@@ -87,7 +87,8 @@ class SessionPersistence
     find_list(list_id)[:todos]
   end
 
-  def add_todo(list, todo)
+  def add_todo(list, text)
+    todo = { id: next_todo_id(list), name: text, completed: false }
     list[:todos] << todo
   end
 
@@ -101,6 +102,12 @@ class SessionPersistence
 
   def mark_all_todos_complete(list)
     list[:todos].each { |todo| todo[:completed] = true }
+  end
+
+  private
+
+  def next_todo_id(list)
+    list[:todos].empty? ? 1 : list[:todos].size + 1
   end
 end
 
@@ -121,7 +128,7 @@ def error_for_todo(name)
 end
 
 def load_list(list_id)
-  @storage.find_list(@list_id)
+  @storage.find_list(list_id)
 end
 
 # ◟◅◸◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◞
@@ -197,7 +204,7 @@ post '/lists' do
     id = next_list_id
     list = { id: id, name: list_name, todos: [] }
     @storage.add_to_list(list)
-    
+
     session[:success] = 'The list has been created!'
     redirect '/lists'
   end
@@ -214,10 +221,8 @@ post '/lists/:list_id/todos' do
     session[:error] = error
     erb :list
   else
-    id = next_todo_id(@lists)
-    todo = { id: id, name: text, completed: false }
-    @storage.add_todo(@lists, todo)
-    
+    @storage.add_todo(@lists, text)
+
     session[:success] = 'You added a todo'
     redirect "/lists/#{@list_id}"
   end
