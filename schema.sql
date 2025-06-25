@@ -1,0 +1,12 @@
+CREATE TABLE list(
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(255) NOT NULL UNIQUE
+);
+
+CREATE TABLE todos(
+  id SERIAL PRIMARY KEY,
+  name TEXT NOT NULL,
+  completed BOOLEAN DEFAULT FALSE,
+  list_id INT NOT NULL,
+  FOREIGN KEY (list_id) REFERENCES list(id)
+);
