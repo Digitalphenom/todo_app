@@ -7,7 +7,7 @@ require 'erubi/capture_block'
 configure do
   enable :sessions
   set :session_secret, SecureRandom.hex(32)
-  set :erb, :escape_html => true
+  set :erb, escape_html: true
 end
 
 before do
@@ -31,23 +31,23 @@ helpers do
     total == done ? 'complete' : ''
   end
 
-  def sort_lists(lists)
+  def sort_lists(lists, &block)
     complete_lists, incomplete_lists =
       lists.partition { |list| list_complete(list) == 'complete' }
-    incomplete_lists.each { |list| yield list }
-    complete_lists.each { |list| yield list }
+    incomplete_lists.each(&block)
+    complete_lists.each(&block)
   end
 
-  def sort_todos(todos)
+  def sort_todos(todos, &block)
     complete_todos, incomplete_todos =
       todos.partition { |todo| todo[:completed] }
 
-    incomplete_todos.each { |todo| yield todo }
-    complete_todos.each { |todo| yield todo }
+    incomplete_todos.each(&block)
+    complete_todos.each(&block)
   end
 end
 
-#‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
+# ‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
 
 class SessionPersistence
   def initialize(session)
@@ -75,8 +75,24 @@ class SessionPersistence
     @session[:lists].size
   end
 
-  def find_matching(list_id)
+  def find_list(list_id)
     all_lists.find { |list| list[:id] == list_id }
+  end
+
+  def find_todos(list_id)
+    find_list(list_id)[:todos]
+  end
+
+  def remove_todo(list_id, todo_id)
+    find_todos(list_id).reject! { |todo| todo[:id] == todo_id }
+  end
+
+  def select_first_todo(list, todo_id)
+    list[:todos].select { |todo| todo[:id] == todo_id }.first
+  end
+
+  def mark_all_todos_complete(list)
+    list[:todos].each { |todo| todo[:completed] = true }
   end
 end
 
@@ -109,11 +125,13 @@ end
 
 def next_todo_id(list)
   return 1 if list[:todos].empty?
+
   list[:todos].size + 1
 end
 
 def next_list_id
   return 0 if @storage.lists_empty?
+
   @storage.list_size
 end
 
@@ -137,9 +155,8 @@ end
 # Edit existing todo
 get '/lists/:id/edit' do
   @list_id = params[:id].to_i
-  @lists = @storage.find_matching(@list_id)
+  @lists = @storage.find_list(@list_id)
   @lists = check_if_empty(@lists)
-
 
   erb :edit_list
 end
@@ -148,7 +165,7 @@ end
 get '/lists/:id' do
   @list_id = params[:id].to_i
   @lists = @storage.all_lists[@list_id]
-  @lists = @storage.find_matching(@list_id)
+  @lists = @storage.find_list(@list_id)
 
   @lists = check_if_empty(@lists)
   erb :list
@@ -175,7 +192,7 @@ end
 # Add todo item
 post '/lists/:list_id/todos' do
   @list_id = params[:list_id].to_i
-  @lists = @storage.all_lists[@list_id]
+  @lists = @storage.find_list(@list_id)
   text = params[:todo].strip
 
   error = error_for_todo(text)
@@ -193,11 +210,11 @@ end
 # Mark all todos complete
 post '/lists/:list_id/todos/complete' do
   @list_id = params[:list_id].to_i
-  @list = @storage.all_lists[@list_id]
+  @list = @storage.find_list(@list_id)
   @list = check_if_empty(@list)
-  
-  @list[:todos].each { |todo| todo[:completed] = true }
-  
+
+  @storage.mark_all_todos_complete(@list)
+
   session[:success] = 'All todos are complete'
   redirect "/lists/#{@list_id}"
 end
@@ -205,15 +222,14 @@ end
 # Mark todo complete
 post '/lists/:list_id/todos/:todo_id' do
   @list_id = params[:list_id].to_i
-  @list = @storage.all_lists[@list_id]
+  @list = @storage.find_list(@list_id)
   @list = check_if_empty(@list)
-
   todo_id = params[:todo_id].to_i
-  todo_arr = @list[:todos]
+
   is_completed = params[:completed] == 'true'
 
-  selected = todo_arr.select { |todo| todo[:id] == todo_id }.first
-  selected[:completed] = is_completed
+  todo = @storage.select_first_todo(@list, todo_id)
+  todo[:completed] = is_completed
   session[:success] = 'The todo item has been completed'
   redirect "/lists/#{@list_id}"
 end
@@ -223,7 +239,7 @@ post '/lists/:list_id/delete' do
   @list_id = params[:list_id].to_i
   @storage.delete_list
 
-  if env["HTTP_X_REQUESTED_WITH"] == "XMLHttpRequest"
+  if env['HTTP_X_REQUESTED_WITH'] == 'XMLHttpRequest'
     '/lists'
   else
     session[:success] = 'The list has been deleted'
@@ -235,10 +251,9 @@ end
 post '/lists/:list_id/todos/:todo_id/delete' do
   @list_id = params[:list_id].to_i
   todo_id = params[:todo_id].to_i
-  todo_arr = @storage.all_lists[@list_id][:todos]
+  @storage.remove_todo(@list_id, todo_id)
 
-  todo_arr.reject! { |todo| todo[:id] == todo_id }
-  if env["HTTP_X_REQUESTED_WITH"] == "XMLHttpRequest"
+  if env['HTTP_X_REQUESTED_WITH'] == 'XMLHttpRequest'
     status 204
   else
     session[:success] = 'The todo item has been deleted'
@@ -258,7 +273,7 @@ post '/lists/:id' do
     session[:error] = error
     erb :edit_list, layout: :layout
   else
-    #session[:lists].reject! { |list| list[:id] == @list_id }
+    # session[:lists].reject! { |list| list[:id] == @list_id }
     @lists[:name] = list_name
     session[:success] = 'The list has been updated!'
     redirect "/lists/#{id}"
