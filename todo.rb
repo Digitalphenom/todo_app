@@ -98,9 +98,7 @@ end
 get '/lists/:id' do
   @list_id = params[:id].to_i
   @lists = load_list(@list_id)
-  
-  # redundant method call
-  #@lists = @storage.find_list(@list_id)
+
   erb :list
 end
 
@@ -133,7 +131,7 @@ post '/lists/:list_id/todos' do
     session[:error] = error
     erb :list
   else
-    @storage.add_todo(@lists, text)
+    @storage.add_todo(@list_id, text)
 
     session[:success] = 'You added a todo'
     redirect "/lists/#{@list_id}"
@@ -144,7 +142,7 @@ end
 post '/lists/:list_id/todos/complete' do
   @list_id = params[:list_id].to_i
   @list = load_list(@list_id)
-  @storage.mark_all_todos_complete(@list)
+  @storage.mark_all_todos_complete(@list_id)
 
   session[:success] = 'All todos are complete'
   redirect "/lists/#{@list_id}"
@@ -157,8 +155,8 @@ post '/lists/:list_id/todos/:todo_id' do
   todo_id = params[:todo_id].to_i
 
   is_completed = params[:completed] == 'true'
-  todo = @storage.select_first_todo(@list, todo_id)
-  todo[:completed] = is_completed
+  todo = @storage.select_first_todo(todo_id)
+  todo.first[:completed] = is_completed
   session[:success] = 'The todo item has been completed'
   redirect "/lists/#{@list_id}"
 end
@@ -190,7 +188,7 @@ post '/lists/:id' do
   list_name = params[:list_name].strip
   id = params[:id].to_i
   error = validate(list_name)
-  
+
   if error
     session[:error] = error
     @lists = @storage.find_list(id)
