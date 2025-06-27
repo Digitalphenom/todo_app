@@ -14,7 +14,7 @@
 <!-- ◟◅◸◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◞ -->
 
   <ul>
-      <% sort_todos(@lists[:todos]) do |todo| %>
+      <% sort_todos(@todos) do |todo| %>
       <% if todo[:completed] %>
         <li class="complete">
       <% else %>

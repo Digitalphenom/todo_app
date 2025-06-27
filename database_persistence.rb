@@ -30,6 +30,14 @@ class DatabasePersistence
     end
   end
 
+  def find_list(list_id)
+    sql = 'SELECT * FROM lists WHERE id = $1'
+    result = query(sql, list_id)
+
+    tuple = result.first
+    { id: tuple['id'], name: tuple['name'] }
+  end
+
   def create_new_list(list_name)
     sql = 'INSERT INTO lists(name) VALUES ($1)'
     query(sql, list_name)
@@ -48,14 +56,6 @@ class DatabasePersistence
 
   def list_size
     all_lists.size
-  end
-
-  def find_list(list_id)
-    sql = 'SELECT * FROM lists WHERE id = $1'
-    result = query(sql, list_id)
-
-    tuple = result.first
-    { id: tuple['id'], name: tuple['name'], todos: find_todos(list_id) }
   end
 
   def update_list_name(list_name, id)
@@ -88,8 +88,6 @@ class DatabasePersistence
     sql = 'UPDATE todos SET completed = TRUE WHERE list_id = $1'
     query(sql, list_id)
   end
-
-  private
 
   def find_todos(list_id)
     sql = 'SELECT * FROM todos WHERE list_id = $1'

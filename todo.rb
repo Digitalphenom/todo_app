@@ -83,10 +83,11 @@ get '/lists/:id/edit' do
   erb :edit_list
 end
 
-# Visit curent todo
+# Visit current list
 get '/lists/:id' do
   @list_id = params[:id].to_i
   @lists = load_list(@list_id)
+  @todos = @storage.find_todos(@list_id)
 
   erb :list
 end
@@ -96,10 +97,10 @@ end
 # Create new list
 post '/lists' do
   list_name = params[:list_name].strip
+  error_msg = validate(list_name)
 
-  error = validate(list_name)
-  if error
-    session[:error] = error
+  if error_msg
+    session[:error] = error_msg
     erb :new_list, layout: :layout
   else
     @storage.create_new_list(list_name)
@@ -112,7 +113,6 @@ end
 # Add todo item
 post '/lists/:list_id/todos' do
   @list_id = params[:list_id].to_i
-  @lists = load_list(@list_id)
   text = params[:todo].strip
   error = error_for_todo(text)
 
@@ -130,7 +130,6 @@ end
 # Mark all todos complete
 post '/lists/:list_id/todos/complete' do
   @list_id = params[:list_id].to_i
-  @list = load_list(@list_id)
   @storage.mark_all_todos_complete(@list_id)
 
   session[:success] = 'All todos are complete'
@@ -140,7 +139,6 @@ end
 # Mark todo complete
 post '/lists/:list_id/todos/:todo_id' do
   @list_id = params[:list_id].to_i
-  @list = load_list(@list_id)
   todo_id = params[:todo_id].to_i
 
   @storage.update_todo_status(todo_id) do |status|
