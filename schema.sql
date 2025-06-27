@@ -1,4 +1,4 @@
-CREATE TABLE list(
+CREATE TABLE lists(
   id SERIAL PRIMARY KEY,
   name VARCHAR(255) NOT NULL UNIQUE
 );
@@ -8,5 +8,5 @@ CREATE TABLE todos(
   name TEXT NOT NULL,
   completed BOOLEAN DEFAULT FALSE,
   list_id INT NOT NULL,
-  FOREIGN KEY (list_id) REFERENCES list(id)
+  FOREIGN KEY (list_id) REFERENCES lists(id) ON DELETE CASCADE
 );
