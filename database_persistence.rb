@@ -22,7 +22,7 @@ class DatabasePersistence
     end
   end
 
-  def add_to_list(list_name)
+  def create_new_list(list_name)
     sql = 'INSERT INTO lists(name) VALUES ($1)'
     query(sql, list_name)
     all_lists
@@ -56,19 +56,24 @@ class DatabasePersistence
     find_list(id)
   end
 
-  def add_todo(list_id, text)
-    sql = 'INSERT INTO todos (name, list_id) VALUES($1, $2)'
-    query(sql, text, list_id)
+  def create_todo(list_id, todo_name)
+    sql = 'INSERT INTO todos (list_id, name) VALUES($1, $2)'
+    query(sql, list_id, todo_name)
   end
 
-  def remove_todo(_list_id, todo_id)
-    sql = 'DELETE FROM todos WHERE id = $1'
-    query(sql, todo_id)
+  def remove_todo(list_id, todo_id)
+    sql = 'DELETE FROM todos WHERE id = $1 AND list_id = $2'
+    query(sql, todo_id, list_id)
   end
 
-  def select_first_todo(todo_id)
-    sql = 'SELECT * FROM todos WHERE id = $1'
-    query(sql, todo_id)
+  def update_todo_status(todo_id)
+    sql = 'SELECT completed FROM todos WHERE id = $1'
+    result = query(sql, todo_id).first
+
+    boolean = result['completed'] == 't' ? 'FALSE' : 'TRUE'
+    yield(boolean)
+    sql = 'UPDATE todos SET completed = $1 WHERE id = $2'
+    query(sql, boolean, todo_id)
   end
 
   def mark_all_todos_complete(list_id)

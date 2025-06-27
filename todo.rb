@@ -10,6 +10,7 @@ configure do
   enable :sessions
   set :session_secret, SecureRandom.hex(32)
   set :erb, escape_html: true
+  also_reload 'database_persistence.rb'
 end
 
 before do
@@ -113,7 +114,7 @@ post '/lists' do
     session[:error] = error
     erb :new_list, layout: :layout
   else
-    @storage.add_to_list(list_name)
+    @storage.create_new_list(list_name)
 
     session[:success] = 'The list has been created!'
     redirect '/lists'
@@ -131,7 +132,7 @@ post '/lists/:list_id/todos' do
     session[:error] = error
     erb :list
   else
-    @storage.add_todo(@list_id, text)
+    @storage.create_todo(@list_id, text)
 
     session[:success] = 'You added a todo'
     redirect "/lists/#{@list_id}"
@@ -154,10 +155,15 @@ post '/lists/:list_id/todos/:todo_id' do
   @list = load_list(@list_id)
   todo_id = params[:todo_id].to_i
 
-  is_completed = params[:completed] == 'true'
-  todo = @storage.select_first_todo(todo_id)
-  todo.first[:completed] = is_completed
-  session[:success] = 'The todo item has been completed'
+  @storage.update_todo_status(todo_id) do |status|
+    message = case status
+              when 'TRUE'
+                'The todo item has been marked completed'
+              when 'FALSE'
+                'The todo item has been marked uncompleted'
+              end
+    session[:success] = message
+  end
   redirect "/lists/#{@list_id}"
 end
 
