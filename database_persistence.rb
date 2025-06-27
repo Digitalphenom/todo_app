@@ -12,13 +12,21 @@ class DatabasePersistence
   end
 
   def all_lists
-    sql = 'SELECT * FROM lists'
+    sql = <<~HEREDOC
+    SELECT lists.*,
+      COUNT(todos.id) AS todos_count,
+      COUNT(NULLIF(todos.completed, true)) AS todos_remaining_count
+      FROM lists
+      LEFT JOIN todos on todos.list_id = lists.id
+      GROUP BY lists.id;
+    HEREDOC
     list = query(sql)
 
     list.map do |tuple|
       { id: tuple['id'],
         name: tuple['name'],
-        todos: find_todos(tuple['id']) }
+        todos_count: tuple['todos_count'].to_i,
+        todos_remaining_count: tuple['todos_remaining_count'].to_i }
     end
   end
 

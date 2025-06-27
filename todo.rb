@@ -18,25 +18,13 @@ before do
 end
 
 helpers do
-  def display_count(list)
-    total = list[:todos].count
-    done = list[:todos].inject(0) do |acc, todo|
-      todo[:completed] ? acc + 1 : acc
-    end
-
-    [total, done]
-  end
-
-  def list_complete(list)
-    total, done = display_count(list)
-    return '' if total.zero? && done.zero?
-
-    total == done ? 'complete' : ''
+  def list_complete?(list)
+    list[:todos_count] > 0 && list[:todos_remaining_count] == 0
   end
 
   def sort_lists(lists, &block)
     complete_lists, incomplete_lists =
-      lists.partition { |list| list_complete(list) == 'complete' }
+      lists.partition { |list| list_complete?(list)}
     incomplete_lists.each(&block)
     complete_lists.each(&block)
   end
