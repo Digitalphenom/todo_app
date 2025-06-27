@@ -2,27 +2,29 @@ require 'pg'
 
 class DatabasePersistence
   def initialize(logger)
-    @db = PG.connect(dbname: "todos")
+    @db = PG.connect(dbname: 'todos')
     @logger = logger
   end
-  
+
   def query(statement, *params)
     @logger.info "#{statement}: #{params}"
     @db.exec_params(statement, params)
   end
 
   def all_lists
-    sql = 'SELECT * FROM list'
-    result = query(sql)
+    sql = 'SELECT * FROM lists'
+    list = query(sql)
 
-    result.map do |tuple|
-      { id: tuple['id'], name: tuple['name'], todos: [] }
+    list.map do |tuple|
+      { id: tuple['id'],
+        name: tuple['name'],
+        todos: find_todos(tuple['id']) }
     end
   end
 
   def add_to_list(list_name)
-    sql = 'INSERT INTO list(name) VALUES ($1)'
-    result = query(sql, list_name)
+    sql = 'INSERT INTO lists(name) VALUES ($1)'
+    query(sql, list_name)
     all_lists
   end
 
@@ -31,8 +33,8 @@ class DatabasePersistence
   end
 
   def delete_list(list_id)
-    sql = 'DELETE FROM list WHERE id = $1'
-    result = query(sql, list_id)
+    sql = 'DELETE FROM lists WHERE id = $1'
+    query(sql, list_id)
     all_lists
   end
 
@@ -41,43 +43,48 @@ class DatabasePersistence
   end
 
   def find_list(list_id)
-    sql = 'SELECT * FROM list WHERE id = $1'
+    sql = 'SELECT * FROM lists WHERE id = $1'
     result = query(sql, list_id)
 
     tuple = result.first
-    { id: tuple['id'], name: tuple['name'], todos: [] }
+    { id: tuple['id'], name: tuple['name'], todos: find_todos(list_id) }
   end
-  
+
   def update_list_name(list_name, id)
-    update_sql = 'UPDATE list SET name = $1 WHERE id = $2'    
-    result = query(update_sql, list_name, id)
+    update_sql = 'UPDATE lists SET name = $1 WHERE id = $2'
+    query(update_sql, list_name, id)
     find_list(id)
   end
 
-  def find_todos(list_id)
-    #find_list(list_id)[:todos]
+  def add_todo(list_id, text)
+    sql = 'INSERT INTO todos (name, list_id) VALUES($1, $2)'
+    query(sql, text, list_id)
   end
 
-  def add_todo(list, text)
-    #todo = { id: next_todo_id(list), name: text, completed: false }
-    #list[:todos] << todo
+  def remove_todo(_list_id, todo_id)
+    sql = 'DELETE FROM todos WHERE id = $1'
+    query(sql, todo_id)
   end
 
-  def remove_todo(list_id, todo_id)
-    #find_todos(list_id).reject! { |todo| todo[:id] == todo_id }
+  def select_first_todo(todo_id)
+    sql = 'SELECT * FROM todos WHERE id = $1'
+    query(sql, todo_id)
   end
 
-  def select_first_todo(list, todo_id)
-    #list[:todos].select { |todo| todo[:id] == todo_id }.first
-  end
-
-  def mark_all_todos_complete(list)
-    #list[:todos].each { |todo| todo[:completed] = true }
+  def mark_all_todos_complete(list_id)
+    sql = 'UPDATE todos SET completed = TRUE WHERE list_id = $1'
+    query(sql, list_id)
   end
 
   private
 
-  def next_todo_id(list)
-    list[:todos].empty? ? 1 : list[:todos].size + 1
+  def find_todos(list_id)
+    sql = 'SELECT * FROM todos WHERE list_id = $1'
+    result = query(sql, list_id)
+    result.map do |tuple|
+      { id: tuple['id'],
+        name: tuple['name'],
+        completed: tuple['completed'] == 't' }
+    end
   end
 end
