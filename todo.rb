@@ -43,9 +43,6 @@ helpers do
 end
 
 # ‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
-def disconnect
-  @db.close
-end
 
 def validate(list)
   if !(1..100).cover? list.size
