@@ -17,6 +17,10 @@ before do
   @storage = DatabasePersistence.new(logger)
 end
 
+after do
+  @storage.disconnect
+end
+
 helpers do
   def list_complete?(list)
     list[:todos_count] > 0 && list[:todos_remaining_count] == 0
@@ -39,6 +43,9 @@ helpers do
 end
 
 # ‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
+def disconnect
+  @db.close
+end
 
 def validate(list)
   if !(1..100).cover? list.size
