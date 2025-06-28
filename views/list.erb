@@ -10,9 +10,7 @@
       <li><a class="edit" href="/lists/<%= @list_id %>/edit">Edit</a></li>
     </ul>
   </header>
-
-<!-- ◟◅◸◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◞ -->
-
+<!-- ‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧ -->
   <ul>
       <% sort_todos(@todos) do |todo| %>
       <% if todo[:completed] %>
@@ -34,9 +32,7 @@
     <% end %>
   </ul>
 </section>
-
-<!-- ◟◅◸◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◞ -->
-
+<!-- ‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧ -->
 <form action="/lists/<%= @list_id %>/todos" method="post">
   <dl>
     <dt>
@@ -50,9 +46,7 @@
     <input type="submit" value="Add">
   </fieldset>
 </form>
-
-<!-- ◟◅◸◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◞ -->
-
+<!-- ‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧ -->
 <% content_for :header_links do %>
   <a class="list" href="/lists">All Lists</a>
 <% end %>
