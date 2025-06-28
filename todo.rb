@@ -10,7 +10,7 @@ configure do
   enable :sessions
   set :session_secret, SecureRandom.hex(32)
   set :erb, escape_html: true
-  also_reload 'database_persistence.rb'
+  also_reload 'database_persistence.rb' if development?
 end
 
 before do
