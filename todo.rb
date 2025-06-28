@@ -23,12 +23,12 @@ end
 
 helpers do
   def list_complete?(list)
-    list[:todos_count] > 0 && list[:todos_remaining_count] == 0
+    list[:todos_count].positive? && list[:todos_remaining_count].zero?
   end
 
   def sort_lists(lists, &block)
     complete_lists, incomplete_lists =
-      lists.partition { |list| list_complete?(list)}
+      lists.partition { |list| list_complete?(list) }
     incomplete_lists.each(&block)
     complete_lists.each(&block)
   end

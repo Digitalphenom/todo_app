@@ -2,11 +2,11 @@ require 'pg'
 
 class DatabasePersistence
   def initialize(logger)
-    @db = if Sinatra::Base.production?
-      PG.connect(ENV['DATABASE_URL']
-    else
-      PG.connect(dbname: 'todos')
-    end
+    @db =  if Sinatra::Base.production?
+        PG.connect(ENV['DATABASE_URL'])
+      else
+        PG.connect(dbname: 'todos')
+      end
 
     @logger = logger
   end
@@ -18,12 +18,12 @@ class DatabasePersistence
 
   def all_lists
     sql = <<~HEREDOC
-    SELECT lists.*,
-      COUNT(todos.id) AS todos_count,
-      COUNT(NULLIF(todos.completed, true)) AS todos_remaining_count
-      FROM lists
-      LEFT JOIN todos on todos.list_id = lists.id
-      GROUP BY lists.id;
+      SELECT lists.*,
+        COUNT(todos.id) AS todos_count,
+        COUNT(NULLIF(todos.completed, true)) AS todos_remaining_count
+        FROM lists
+        LEFT JOIN todos on todos.list_id = lists.id
+        GROUP BY lists.id;
     HEREDOC
     list = query(sql)
 
